@@ -38,9 +38,17 @@ const downloadImage = (url) => {
 const removeImage = (filename) => unlinkPromised(filename);
 
 const calculateImageHash = async (filename) => {
-  const {stdout} = await execPromised(`python ./hash.py ${filename}`);
+  const { stdout } = await execPromised(`python ./hash.py ${filename}`);
   return stdout;
 };
+
+const calculateDiff = async (origin, candidates) => {
+  const args = `${origin} ${candidates.join(' ')}`;
+  const { stdout } = await execPromised(`python ./diff.py ${args}`);
+  return stdout;
+}
+
+const isValidHash = hash => hash.length === 16*4;
 
 app.post('/hash', async (req, res) => {
   const url = req.body.url;
@@ -55,6 +63,26 @@ app.post('/hash', async (req, res) => {
   res.end();
 });
 
-app.post('/diff');
+app.post('/diff', async (req, res) => {
+  const origin = req.body.origin;
+  const candidates = req.body.candidates;
+  if (!isValidHash(origin)) {
+    res.status(500).send('Invalid origin hash');
+    res.end();
+  }
+  if (!Array.isArray(candidates) || candidates.length < 1) {
+    res.status(500).send('Invalid candidates');
+    res.end();
+  }
+  for (const cand of candidates) {
+    if (!isValidHash(cand)) {
+      res.status(500).send(`Invalid hash ${cand}`);
+      res.end();
+    }
+  }
+  const diffs = await calculateDiff(origin, candidates);
+  res.send(diffs);
+  res.end();
+});
 
 app.listen(PORT, () => console.log(`Image hash is running on port ${PORT}`));
