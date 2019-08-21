@@ -6,6 +6,7 @@ const { promisify } = require('util');
 const { isURL } = require('validator');
 const bodyParser = require('body-parser');
 const child_process = require('child_process');
+const Sentry = require('@sentry/node');
 
 const unlinkPromised = promisify(fs.unlink);
 const execPromised = promisify(child_process.exec);
@@ -14,6 +15,9 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
+Sentry.init({ dsn: 'https://80d20d7afa644308b66f29f7883f0c60@sentry.io/1537395' });
+
+app.use(Sentry.Handlers.requestHandler());
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -84,5 +88,7 @@ app.post('/diff', async (req, res) => {
   res.send(diffs);
   res.end();
 });
+
+app.use(Sentry.Handlers.errorHandler());
 
 app.listen(PORT, () => console.log(`Image hash is running on port ${PORT}`));
