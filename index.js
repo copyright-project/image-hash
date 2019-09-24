@@ -52,9 +52,10 @@ const calculateDiff = async (origin, candidates) => {
   return stdout;
 }
 
-const isValidHash = hash => hash.length === 16*4;
+const isValidHash = hash => hash.length === 16 * 4;
 
 app.post('/hash', async (req, res) => {
+  req.setTimeout(1000 * 60 * 5);
   const url = req.body.url;
   if (!isURL(url)) {
     res.status(500).send('Invalid URL');
