@@ -1,6 +1,7 @@
 const fs = require('fs');
 const cors = require('cors');
 const axios = require('axios');
+const crypto = require('crypto');
 const express = require('express');
 const { promisify } = require('util');
 const { isURL } = require('validator');
@@ -41,9 +42,20 @@ const downloadImage = (url) => {
 
 const removeImage = (filename) => unlinkPromised(filename);
 
-const calculateImageHash = async (filename) => {
+const calculateImagePHash = async (filename) => {
   const { stdout } = await execPromised(`python ./hash.py ${filename}`);
-  return stdout;
+  const [pHash] = stdout.split('\n');
+  return pHash;
+};
+
+const calculateImageHash = async (filename) => {
+  return new Promise(resolve => {
+    const hash = crypto.createHash('sha256');
+    fs
+      .createReadStream(filename)
+      .on('data', data => hash.update(data))
+      .on('end', () => resolve(hash.digest('hex')));
+  });
 };
 
 const calculateDiff = async (origin, candidates) => {
@@ -61,10 +73,26 @@ app.post('/hash', async (req, res) => {
     res.status(500).send('Invalid URL');
     res.end();
   }
-  const filename = await downloadImage(url);
-  const hash = await calculateImageHash(filename);
-  await removeImage(filename);
-  res.send(hash);
+
+  try {
+    const filename = await downloadImage(url);
+
+    const [binaryHash, pHash] = await Promise.all([
+      calculateImageHash(filename),
+      calculateImagePHash(filename)
+    ]);
+
+    await removeImage(filename);
+
+    res.send({
+      binaryHash,
+      pHash
+    });
+
+  } catch (error) {
+    console.log(error);
+  }
+
   res.end();
 });
 
