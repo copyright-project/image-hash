@@ -42,13 +42,13 @@ const downloadImage = (url) => {
 
 const removeImage = (filename) => unlinkPromised(filename);
 
-const calculateImagePHash = async (filename) => {
+const calculateImageHash = async (filename) => {
   const { stdout } = await execPromised(`python ./hash.py ${filename}`);
-  const [pHash] = stdout.split('\n');
-  return pHash;
+  const [pHash, wHash] = stdout.split('\n');
+  return { pHash, wHash };
 };
 
-const calculateImageHash = async (filename) => {
+const calculateFileHash = async (filename) => {
   return new Promise(resolve => {
     const hash = crypto.createHash('sha256');
     fs
@@ -64,7 +64,7 @@ const calculateDiff = async (origin, candidates) => {
   return stdout;
 }
 
-const isValidHash = hash => hash.length === 16 * 4;
+const isValidHash = hash => hash.length > 0;
 
 app.post('/hash', async (req, res) => {
   req.setTimeout(1000 * 60 * 5);
@@ -77,16 +77,17 @@ app.post('/hash', async (req, res) => {
   try {
     const filename = await downloadImage(url);
 
-    const [binaryHash, pHash] = await Promise.all([
-      calculateImageHash(filename),
-      calculateImagePHash(filename)
+    const [binaryHash, { pHash, wHash }] = await Promise.all([
+      calculateFileHash(filename),
+      calculateImageHash(filename)
     ]);
 
     await removeImage(filename);
 
     res.send({
       binaryHash,
-      pHash
+      pHash,
+      wHash
     });
 
   } catch (error) {
