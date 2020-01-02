@@ -22,7 +22,8 @@ def calculate_distance(origin, candidates):
     origin = imagehash.hex_to_hash(str(origin))
     for u in candidates:
         candidate = imagehash.hex_to_hash(str(u))
-        res.append(origin - candidate)
+        calc = (float(origin - candidate)/len(origin.hash)**2)
+        res.append(calc)
     click.echo(res)
 
 if __name__ == '__main__':
