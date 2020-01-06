@@ -17,8 +17,14 @@ Image hashing is based on [ImageHash](https://pypi.org/project/ImageHash/) Pytho
 E.g.:
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '{"url": "https://some-image-url"}' localhost:5000/hash
-
-fffffff9fc11fffee7ffeff0fffd1ff80fe006f0002000010003000300038007
+```
+Response
+```
+{
+    binaryHash: "<some-64-binary-hash-value>",
+    pHash: "<some-64-perceptual-hash-value>",
+    wHash: "<some-64-wavelength-hash-value>",
+}
 ```
 
 ### `POST /diff`
