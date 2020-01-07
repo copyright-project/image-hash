@@ -6,8 +6,8 @@ import imagehash
 @click.argument('image_path')
 def calculate_hash(image_path): 
     imageFile = Image.open(image_path)
-    phash = imagehash.phash(imageFile, 16)
-    whash = imagehash.whash(imageFile, 16, 16)
+    phash = imagehash.phash(imageFile, 12)
+    whash = imagehash.whash(imageFile)
     click.echo(phash)
     click.echo(whash)
 
