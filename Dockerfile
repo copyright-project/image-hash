@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs:latest
+FROM nikolaik/python-nodejs:python2.7-nodejs13
 
 # Create app directory
 WORKDIR /usr/src/image-hash

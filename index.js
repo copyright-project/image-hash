@@ -91,7 +91,7 @@ app.post('/hash', async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.log(error.toJSON());
   }
 
   res.end();
