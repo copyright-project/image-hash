@@ -91,7 +91,11 @@ app.post('/hash', async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error.toJSON());
+    if (typeof error.toJSON === 'function') {
+      console.log(error.toJSON());
+    } else {
+      console.log(error);
+    }
   }
 
   res.end();
